@@ -68,12 +68,12 @@ export function ChatInterface({
 
       {/* Input Area */}
       <div className="border-t border-zinc-800 bg-zinc-900">
-        <form onSubmit={handleSubmit} className="p-4">
-          {/* Controls Bar */}
-          <div className="flex items-center gap-2 mb-2">
-            <KitToggleMenu kits={kits} onToggleKit={onToggleKit} />
-          </div>
+        {/* Controls Bar — outside the form so Enter never triggers these buttons */}
+        <div className="flex items-center gap-2 px-4 pt-4">
+          <KitToggleMenu kits={kits} onToggleKit={onToggleKit} />
+        </div>
 
+        <form onSubmit={handleSubmit} className="p-4 pt-2">
           {/* Input */}
           <div className="flex gap-2">
             <input

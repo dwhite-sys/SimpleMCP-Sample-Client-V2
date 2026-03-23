@@ -2,9 +2,11 @@
  * persistence.ts — localStorage-backed store for client config and chat history.
  *
  * Keys:
- *   simplemcp:llm_config   — { baseUrl, apiKey, model }
- *   simplemcp:server_url   — string
- *   simplemcp:chats        — Chat[]
+ *   simplemcp:llm_config    — { baseUrl, apiKey, model }
+ *   simplemcp:server_url    — string
+ *   simplemcp:chats         — Chat[]
+ *   simplemcp:pending_chat  — Chat | null  (in-progress chat not yet committed)
+ *   simplemcp:selected_model — string
  */
 
 import type { Chat } from '../types/simplemcp';
@@ -14,6 +16,7 @@ const KEYS = {
   llmConfig: 'simplemcp:llm_config',
   serverUrl: 'simplemcp:server_url',
   chats: 'simplemcp:chats',
+  pendingChat: 'simplemcp:pending_chat',
   selectedModel: 'simplemcp:selected_model',
 } as const;
 
@@ -69,15 +72,33 @@ export function saveSelectedModel(model: string) {
 export function loadChats(): Chat[] {
   const raw = load<Chat[]>(KEYS.chats);
   if (!raw) return [];
-  // Rehydrate Date objects (JSON.parse returns strings)
-  return raw.map((c) => ({
-    ...c,
-    createdAt: new Date(c.createdAt),
-    updatedAt: new Date(c.updatedAt),
-    messages: c.messages.map((m) => ({ ...m, timestamp: new Date(m.timestamp) })),
-  }));
+  return raw.map(rehydrateChat);
 }
 
 export function saveChats(chats: Chat[]) {
   save(KEYS.chats, chats);
+}
+
+// ── Pending Chat ──────────────────────────────────────────────────────────────
+
+function rehydrateChat(c: Chat): Chat {
+  return {
+    ...c,
+    createdAt: new Date(c.createdAt),
+    updatedAt: new Date(c.updatedAt),
+    messages: c.messages.map((m) => ({ ...m, timestamp: new Date(m.timestamp) })),
+  };
+}
+
+export function loadPendingChat(): Chat | null {
+  const raw = load<Chat>(KEYS.pendingChat);
+  return raw ? rehydrateChat(raw) : null;
+}
+
+export function savePendingChat(chat: Chat | null) {
+  if (chat) {
+    save(KEYS.pendingChat, chat);
+  } else {
+    try { localStorage.removeItem(KEYS.pendingChat); } catch { /* ignore */ }
+  }
 }

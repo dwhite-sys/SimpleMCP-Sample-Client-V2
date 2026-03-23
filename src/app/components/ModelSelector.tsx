@@ -52,7 +52,7 @@ export function ModelSelector({ selectedModel, onSelectModel, isConfigured }: Mo
 
   // Format model name as "Provider: Model Name"
   const formatModelName = (model: ModelInfo): string => {
-    if (model.owned_by) return `${m.owned_by}: ${m.name || m.id}`;
+    if (model.owned_by) return `${model.owned_by}: ${model.name || model.id}`;
     // Try to infer provider from id (e.g. "google/gemini-pro" → "Google: gemini-pro")
     const parts = model.id.split('/');
     if (parts.length >= 2) {

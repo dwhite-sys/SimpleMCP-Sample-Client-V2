@@ -142,14 +142,31 @@ export class LLMClient {
   async generateTitle(userMessage: string): Promise<string> {
     if (!this.isConfigured()) return userMessage.slice(0, 40);
     try {
-      const { content } = await this.chat([
-        {
-          role: 'system',
-          content: 'Generate a short 3-6 word title for a chat that starts with this message. Return ONLY the title, no quotes, no punctuation at the end.',
+      const url = `${this.config.baseUrl.replace(/\/$/, '')}/chat/completions`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.config.apiKey}`,
+          'Content-Type': 'application/json',
         },
-        { role: 'user', content: userMessage },
-      ]);
-      return content.trim().slice(0, 60) || userMessage.slice(0, 40);
+        body: JSON.stringify({
+          model: this.config.model,
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Generate a short 3-6 word title for a chat that starts with this message. Return ONLY the title, no quotes, no punctuation at the end.',
+            },
+            { role: 'user', content: userMessage.slice(0, 500) },
+          ],
+          stream: false,
+          max_tokens: 20,
+        }),
+      });
+      if (!res.ok) throw new Error(`title gen failed: ${res.status}`);
+      const data = await res.json();
+      const title = data.choices?.[0]?.message?.content?.trim();
+      return title ? title.slice(0, 60) : userMessage.slice(0, 40);
     } catch {
       return userMessage.slice(0, 40);
     }

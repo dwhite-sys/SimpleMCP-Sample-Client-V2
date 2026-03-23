@@ -32,6 +32,7 @@ export function KitToggleMenu({ kits, onToggleKit }: KitToggleMenuProps) {
   return (
     <div className="relative" ref={menuRef}>
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-md text-sm text-zinc-300 transition-colors"
       >
@@ -41,7 +42,7 @@ export function KitToggleMenu({ kits, onToggleKit }: KitToggleMenuProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-64 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl z-50 overflow-hidden">
+        <div className="absolute bottom-full left-0 mb-2 w-64 bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl z-50 overflow-hidden">
           <div className="p-2 border-b border-zinc-800">
             <p className="text-xs text-zinc-500">
               {enabledCount} of {kits.length} kits enabled

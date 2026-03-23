@@ -36,6 +36,28 @@ export default function App() {
   });
   const [selectedModel, setSelectedModel] = useState(() => loadSelectedModel() ?? '');
 
+  // Disabled tools — stored as "kit_name::tool_name" strings
+  const [disabledTools, setDisabledTools] = useState<Set<string>>(() => new Set());
+
+  const toggleDisabledTool = (toolKey: string) => {
+    setDisabledTools((prev) => {
+      const next = new Set(prev);
+      if (next.has(toolKey)) next.delete(toolKey);
+      else next.add(toolKey);
+      return next;
+    });
+  };
+
+  const enableAllToolsInKit = (kitName: string) => {
+    setDisabledTools((prev) => {
+      const next = new Set(prev);
+      kitsWithTools
+        .find((k) => k.kit_name === kitName)
+        ?.tools.forEach((t) => next.delete(`${kitName}::${t.name}`));
+      return next;
+    });
+  };
+
   // ── LLM config ────────────────────────────────────────────────────────────
 
   const handleLLMConfigChange = (partial: Partial<LLMConfig>) => {
@@ -242,8 +264,11 @@ export default function App() {
     return titled;
   };
 
-  // Collect all tools from enabled kits
-  const getAllTools = (): Tool[] => kitsWithTools.flatMap((k) => k.tools);
+  // Collect all tools from enabled kits, excluding disabled ones
+  const getAllTools = (): Tool[] =>
+    kitsWithTools.flatMap((k) =>
+      k.tools.filter((t) => !disabledTools.has(`${k.kit_name}::${t.name}`))
+    );
 
   // ── Send message + inference loop ─────────────────────────────────────────
 
@@ -449,11 +474,14 @@ export default function App() {
         kitsWithTools={kitsWithTools}
         llmConfig={llmConfig}
         selectedModel={selectedModel}
+        disabledTools={disabledTools}
         onServerUrlChange={handleServerUrlChange}
         onLLMConfigChange={handleLLMConfigChange}
         onSelectModel={handleSelectModel}
         onTestConnection={testConnection}
         onRefresh={handleRefresh}
+        onToggleDisabledTool={toggleDisabledTool}
+        onEnableAllToolsInKit={enableAllToolsInKit}
       />
 
       <div className="flex-1 overflow-hidden">

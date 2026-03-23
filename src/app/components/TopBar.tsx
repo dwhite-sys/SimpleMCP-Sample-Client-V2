@@ -12,11 +12,14 @@ interface TopBarProps {
   kitsWithTools: KitWithTools[];
   llmConfig: LLMConfig;
   selectedModel: string;
+  disabledTools: Set<string>;
   onServerUrlChange: (url: string) => void;
   onLLMConfigChange: (config: Partial<LLMConfig>) => void;
   onSelectModel: (modelId: string) => void;
   onTestConnection: () => Promise<boolean>;
   onRefresh: () => void;
+  onToggleDisabledTool: (toolKey: string) => void;
+  onEnableAllToolsInKit: (kitName: string) => void;
 }
 
 export function TopBar({
@@ -26,11 +29,14 @@ export function TopBar({
   kitsWithTools,
   llmConfig,
   selectedModel,
+  disabledTools,
   onServerUrlChange,
   onLLMConfigChange,
   onSelectModel,
   onTestConnection,
   onRefresh,
+  onToggleDisabledTool,
+  onEnableAllToolsInKit,
 }: TopBarProps) {
   const [showSettings, setShowSettings] = useState(false);
   const isLLMConfigured = !!(llmConfig.baseUrl && llmConfig.apiKey);
@@ -86,9 +92,12 @@ export function TopBar({
         kitsWithTools={kitsWithTools}
         serverUrl={serverUrl}
         llmConfig={llmConfig}
+        disabledTools={disabledTools}
         onServerUrlChange={onServerUrlChange}
         onLLMConfigChange={onLLMConfigChange}
         onRefresh={onRefresh}
+        onToggleDisabledTool={onToggleDisabledTool}
+        onEnableAllToolsInKit={onEnableAllToolsInKit}
       />
     </>
   );

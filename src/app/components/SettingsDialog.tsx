@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Package, Wrench, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { X, Package, Wrench, RefreshCw, Eye, EyeOff, ChevronDown, ChevronRight } from 'lucide-react';
 import type { Kit, KitWithTools } from '../types/simplemcp';
 import type { LLMConfig } from '../services/llm';
 
@@ -10,9 +10,12 @@ interface SettingsDialogProps {
   kitsWithTools: KitWithTools[];
   serverUrl: string;
   llmConfig: LLMConfig;
+  disabledTools: Set<string>;
   onServerUrlChange: (url: string) => void;
   onLLMConfigChange: (config: Partial<LLMConfig>) => void;
   onRefresh: () => void;
+  onToggleDisabledTool: (toolKey: string) => void;
+  onEnableAllToolsInKit: (kitName: string) => void;
 }
 
 export function SettingsDialog({
@@ -22,15 +25,36 @@ export function SettingsDialog({
   kitsWithTools,
   serverUrl,
   llmConfig,
+  disabledTools,
   onServerUrlChange,
   onLLMConfigChange,
   onRefresh,
+  onToggleDisabledTool,
+  onEnableAllToolsInKit,
 }: SettingsDialogProps) {
-  const [activeTab, setActiveTab] = useState<'server' | 'llm' | 'kits' | 'tools'>('server');
+  const [activeTab, setActiveTab] = useState<'server' | 'llm' | 'kits'>('server');
   const [urlInput, setUrlInput] = useState(serverUrl);
   const [llmUrl, setLlmUrl] = useState(llmConfig.baseUrl);
   const [llmKey, setLlmKey] = useState(llmConfig.apiKey);
   const [showKey, setShowKey] = useState(false);
+  const [collapsedKits, setCollapsedKits] = useState<Set<string>>(new Set());
+
+  const toggleKitCollapsed = (kitName: string) => {
+    setCollapsedKits((prev) => {
+      const next = new Set(prev);
+      if (next.has(kitName)) next.delete(kitName);
+      else next.add(kitName);
+      return next;
+    });
+  };
+
+  const toggleTool = (toolKey: string) => {
+    onToggleDisabledTool(toolKey);
+  };
+
+  const enableAllInKit = (kit: KitWithTools) => {
+    onEnableAllToolsInKit(kit.kit_name);
+  };
 
   if (!isOpen) return null;
 
@@ -44,7 +68,6 @@ export function SettingsDialog({
     { id: 'server', label: 'SimpleMCP' },
     { id: 'llm', label: 'LLM' },
     { id: 'kits', label: `Kits (${kits.length})` },
-    { id: 'tools', label: 'Tools' },
   ] as const;
 
   return (
@@ -199,77 +222,116 @@ export function SettingsDialog({
                   No kits available. Check your server connection.
                 </div>
               ) : (
-                kits.map((kit) => (
-                  <div key={kit.kit_name} className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Package className="w-4 h-4 text-blue-400" />
-                        <h3 className="font-medium text-zinc-100">{kit.kit_name}</h3>
-                      </div>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        kit.enabled ? 'bg-green-600/20 text-green-400' : 'bg-zinc-700/50 text-zinc-400'
-                      }`}>
-                        {kit.enabled ? 'Enabled' : 'Disabled'}
-                      </span>
-                    </div>
-                    <p className="text-sm text-zinc-400">{kit.kit_description}</p>
-                    <p className="text-xs text-zinc-600 mt-1 font-mono">{kit.filename}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
+                kits.map((kit) => {
+                  const kitWithTools = kitsWithTools.find((k) => k.kit_name === kit.kit_name);
+                  const tools = kitWithTools?.tools ?? [];
+                  const isCollapsed = collapsedKits.has(kit.kit_name);
+                  const hasDisabled = tools.some((t) => disabledTools.has(`${kit.kit_name}::${t.name}`));
 
-          {/* Tools */}
-          {activeTab === 'tools' && (
-            <div className="space-y-4">
-              {kitsWithTools.length === 0 ? (
-                <div className="text-center text-zinc-500 py-8">
-                  No enabled kits with tools.
-                </div>
-              ) : (
-                kitsWithTools.map((kit) => (
-                  <div key={kit.kit_name} className="space-y-2">
-                    <h3 className="text-sm font-medium text-zinc-300 flex items-center gap-2">
-                      <Package className="w-4 h-4 text-blue-400" />
-                      {kit.kit_name}
-                      <span className="text-xs text-zinc-500">
-                        ({kit.tools.length} {kit.tools.length === 1 ? 'tool' : 'tools'})
-                      </span>
-                    </h3>
-                    <div className="space-y-1 pl-6">
-                      {kit.tools.map((tool) => (
-                        <div key={tool.name} className="bg-zinc-800/30 border border-zinc-700/50 rounded-md p-3">
-                          <div className="flex items-start gap-2 mb-1">
-                            <Wrench className="w-3.5 h-3.5 text-blue-400 mt-0.5" />
-                            <div className="flex-1">
-                              <h4 className="text-sm font-mono text-zinc-100">{tool.name}</h4>
-                              <p className="text-xs text-zinc-400 mt-0.5">{tool.description}</p>
-                            </div>
-                          </div>
-                          {Object.keys(tool.parameters.properties || {}).length > 0 && (
-                            <div className="mt-2 pl-5">
-                              <div className="flex flex-wrap gap-1">
-                                {Object.entries(tool.parameters.properties || {}).map(([param, schema]) => (
-                                  <span
-                                    key={param}
-                                    className={`text-xs px-1.5 py-0.5 rounded ${
-                                      tool.parameters.required?.includes(param)
-                                        ? 'bg-blue-600/20 text-blue-300'
-                                        : 'bg-zinc-700/50 text-zinc-400'
-                                    }`}
-                                  >
-                                    {param}{tool.parameters.required?.includes(param) && '*'}: {(schema as any).type}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                  return (
+                    <div key={kit.kit_name} className="bg-zinc-800/50 border border-zinc-700 rounded-lg overflow-hidden">
+                      {/* Kit header */}
+                      <div className="flex items-center gap-2 p-4">
+                        <button
+                          onClick={() => toggleKitCollapsed(kit.kit_name)}
+                          className="flex items-center gap-2 flex-1 text-left group min-w-0"
+                        >
+                          {isCollapsed
+                            ? <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-zinc-200 transition-colors flex-shrink-0" />
+                            : <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-zinc-200 transition-colors flex-shrink-0" />
+                          }
+                          <Package className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                          <span className="font-medium text-zinc-100 group-hover:text-white transition-colors truncate">
+                            {kit.kit_name}
+                          </span>
+                          <span className="text-xs text-zinc-500 flex-shrink-0">
+                            ({tools.length} {tools.length === 1 ? 'tool' : 'tools'})
+                          </span>
+                        </button>
+                        {hasDisabled && (
+                          <button
+                            onClick={() => enableAllInKit(kitWithTools!)}
+                            className="text-xs px-2 py-0.5 rounded bg-blue-600/20 text-blue-400 hover:bg-blue-600/40 transition-colors whitespace-nowrap flex-shrink-0"
+                          >
+                            Enable All
+                          </button>
+                        )}
+                        <span className="text-xs text-zinc-600 font-mono flex-shrink-0">{kit.filename}</span>
+                        <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                          kit.enabled ? 'bg-green-600/20 text-green-400' : 'bg-zinc-700/50 text-zinc-400'
+                        }`}>
+                          {kit.enabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                      </div>
+
+                      {/* Description */}
+                      {kit.kit_description && (
+                        <div className="px-4 pb-2 -mt-2">
+                          <p className="text-sm text-zinc-400 pl-10">{kit.kit_description}</p>
                         </div>
-                      ))}
+                      )}
+
+                      {/* Collapsible tool list */}
+                      {!isCollapsed && tools.length > 0 && (
+                        <div className="border-t border-zinc-700/50 px-4 py-3 space-y-1">
+                          {tools.map((tool) => {
+                            const toolKey = `${kit.kit_name}::${tool.name}`;
+                            const isEnabled = !disabledTools.has(toolKey);
+                            return (
+                              <div
+                                key={tool.name}
+                                className={`bg-zinc-800/30 border rounded-md p-3 transition-opacity ${
+                                  isEnabled ? 'border-zinc-700/50 opacity-100' : 'border-zinc-800/50 opacity-40'
+                                }`}
+                              >
+                                <div className="flex items-start gap-2">
+                                  <Wrench className="w-3.5 h-3.5 text-blue-400 mt-0.5 flex-shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <h4 className="text-sm font-mono text-zinc-100">{tool.name}</h4>
+                                      <button
+                                        onClick={() => toggleTool(toolKey)}
+                                        className="relative flex-shrink-0"
+                                        title={isEnabled ? 'Disable tool' : 'Enable tool'}
+                                      >
+                                        <div className={`w-8 h-4 rounded-full transition-colors ${isEnabled ? 'bg-blue-600' : 'bg-zinc-700'}`}>
+                                          <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform ${isEnabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                                        </div>
+                                      </button>
+                                    </div>
+                                    <p className="text-xs text-zinc-400 mt-0.5">{tool.description}</p>
+                                    {Object.keys(tool.parameters.properties || {}).length > 0 && (
+                                      <div className="flex flex-wrap gap-1 mt-1.5">
+                                        {Object.entries(tool.parameters.properties || {}).map(([param, schema]) => (
+                                          <span
+                                            key={param}
+                                            className={`text-xs px-1.5 py-0.5 rounded ${
+                                              tool.parameters.required?.includes(param)
+                                                ? 'bg-blue-600/20 text-blue-300'
+                                                : 'bg-zinc-700/50 text-zinc-400'
+                                            }`}
+                                          >
+                                            {param}{tool.parameters.required?.includes(param) && '*'}: {(schema as any).type}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {!isCollapsed && kit.enabled && tools.length === 0 && (
+                        <div className="border-t border-zinc-700/50 px-4 py-3 text-xs text-zinc-500">
+                          No tools loaded yet — try refreshing.
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           )}

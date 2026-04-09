@@ -1,343 +1,48 @@
-# SimpleMCP Demo Client# SimpleMCP Demo Client# SimpleMCP V2 Client
+# SimpleMCP Sample Client V2
 
+This is the reference client for the SimpleMCP V2 protocol. It's meant to show
+how a client should talk to a SimpleMCP V2 server and to be a usable starting
+point for anyone building their own.
 
+## What SimpleMCP V2 is
 
-A desktop chat client for [SimpleMCP V2](https://github.com/dwhite-sys/SimpleMCP) — connect any **OpenAI-compatible Chat Completions API** to MCP tools running inside a SimpleMCP server.
+SimpleMCP V2 is a tool server framework built around the concept of kits. A kit
+is a Python file that exposes a set of tools. The server runs all your kits in a
+single Docker container and makes them available over both the SimpleMCP protocol
+and standard MCP simultaneously, so one server works with any client that speaks
+either.
 
+The SimpleMCP protocol specifically adds kit-level discovery and toggling on top
+of MCP. Instead of spinning up a separate server per tool category and editing
+config files to toggle things, you connect once and browse what's available. This
+client makes that visible and interactive.
 
+## How it connects
 
-![Electron](https://img.shields.io/badge/Electron-41-blue) ![React](https://img.shields.io/badge/React-18-61dafb) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6)A desktop chat client for [SimpleMCP V2](https://github.com/dwhite-sys/SimpleMCP) — connect any **OpenAI-compatible Chat Completions API** to MCP tools running inside a SimpleMCP server.An OpenWebUI-style frontend for the SimpleMCP V2 protocol. This client provides a modern, chat-based interface for interacting with SimpleMCP tools and kits.
+The client talks to two things:
 
+- A SimpleMCP V2 server (default: `http://localhost:8467`) for kit and tool
+  management
+- Any OpenAI-compatible LLM endpoint for inference
 
+The server handles tool execution. The LLM endpoint handles reasoning and decides
+when to call tools. The client wires them together and runs the agentic loop.
 
----
-
-
-
-## LLM Compatibility![Electron](https://img.shields.io/badge/Electron-41-blue) ![React](https://img.shields.io/badge/React-18-61dafb) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6)## Features
-
-
-
-The client works with **any provider that implements the [OpenAI Chat Completions API](https://platform.openai.com/docs/api-reference/chat)** standard (`POST /chat/completions` with streaming, tool calls, etc.):
-
-
-
-| Provider | Base URL |---- **Kit Management** - Browse and manage SimpleMCP kits with toggle controls
-
-| --- | --- |
-
-| **OpenAI** | `https://api.openai.com/v1` |- **Tool Browser** - Explore available tools with detailed parameter information
-
-| **OpenRouter** | `https://openrouter.ai/api/v1` |
-
-| **Ollama** | `http://localhost:11434/v1` |## LLM Compatibility- **Chat Interface** - Execute tools via natural language-style commands
-
-| **LM Studio** | `http://localhost:1234/v1` |
-
-| **vLLM** | `http://localhost:8000/v1` |- **Connection Management** - Configure and test SimpleMCP server connections
-
-| **Azure OpenAI** | `https://<resource>.openai.azure.com/openai/deployments/<model>/` |
-
-| **Anthropic (via proxy)** | Any OpenAI-compatible wrapper |The client works with **any provider that implements the [OpenAI Chat Completions API](https://platform.openai.com/docs/api-reference/chat)** standard (`POST /chat/completions` with streaming, tool calls, etc.):- **Real-time Updates** - See tool results and errors in real-time
-
-| Any other compatible endpoint | Just enter the base URL |
-
-- **Resizable Panels** - Customize your workspace layout
-
-All you need is:
-
-| Provider | Base URL |
-
-1. A **base URL** pointing to the `/v1` (or equivalent) endpoint
-
-2. An **API key** (if the provider requires one)|---|---|## Getting Started
-
-3. A **model name** — the client will also try to auto-fetch available models from the `/models` endpoint
-
-| **OpenAI** | `https://api.openai.com/v1` |
-
-## Features
-
-| **OpenRouter** | `https://openrouter.ai/api/v1` |### Prerequisites
-
-- **Agentic tool-use loop** — the LLM can chain multiple tool calls per turn (up to 10 rounds)
-
-- **Streaming responses** — tokens appear as they arrive| **Ollama** | `http://localhost:11434/v1` |
-
-- **Collapsible tool calls** — tool invocations collapse into a single clickable row showing the tool name and ✓/✗ status
-
-- **Full Markdown rendering** — headings, bold/italic, code blocks with syntax highlighting (VS Code Dark+ theme), tables with borders, nested lists, blockquotes, links, task lists| **LM Studio** | `http://localhost:1234/v1` |- A running SimpleMCP V2 server (default: `http://localhost:8000`)
-
-- **Copy button** on code blocks
-
-- **Kit toggle** — enable/disable tool kits on-the-fly without restarting| **vLLM** | `http://localhost:8000/v1` |- Node.js and npm/pnpm
-
-- **Chat persistence** — conversations, LLM config, server URL, and selected model are saved to `localStorage`
-
-- **Background title generation** — chat titles are generated by the LLM without blocking the UI| **Azure OpenAI** | `https://<resource>.openai.azure.com/openai/deployments/<model>/` |
-
-- **Multi-platform** — builds for Linux (.AppImage), Windows (.exe), and macOS (.dmg) via GitHub Actions
-
-| **Anthropic (via proxy)** | Any OpenAI-compatible wrapper |### Running the Client
-
-## Getting Started
-
-| Any other compatible endpoint | Just enter the base URL |
-
-### Prerequisites
-
-1. Make sure your SimpleMCP server is running
-
-- A running **SimpleMCP V2** server (default: `http://localhost:8467`)
-
-- An OpenAI-compatible LLM endpoint + API keyAll you need is:2. Open the application
-
-
-
-### Download1. A **base URL** pointing to the `/v1` (or equivalent) endpoint3. Configure the server URL in Settings (top-right gear icon) if different from default
-
-
-
-Pre-built executables for all platforms are available under [Actions → Build Electron App → Artifacts](../../actions).2. An **API key** (if the provider requires one)4. Browse available kits in the left sidebar
-
-
-
-| Platform | File |3. A **model name** — the client will also try to auto-fetch available models from the `/models` endpoint5. Explore tools in the right sidebar
-
-| --- | --- |
-
-| Linux | `SimpleMCP-Demo-Client-Linux.zip` → `.AppImage` |6. Execute tools via the chat interface
-
-| Windows | `SimpleMCP-Demo-Client-Windows.zip` → `.exe` installer |
-
-| macOS | `SimpleMCP-Demo-Client-macOS.zip` → `.dmg` |## Features
-
-
-
-### Run from source## Using the Client
-
-
-
-```bash- **Agentic tool-use loop** — the LLM can chain multiple tool calls per turn (up to 10 rounds)
-
-git clone https://github.com/dwhite-sys/SimpleMCP-Sample-Client-V2.git
-
-cd SimpleMCP-Sample-Client-V2- **Streaming responses** — tokens appear as they arrive### Tool Invocation Format
-
+## Getting started
+```bash
 npm install
-
-npm run dev              # browser at http://localhost:5173- **Collapsible tool calls** — tool invocations collapse into a single clickable row showing the tool name and ✓/✗ status
-
-
-
-# or- **Full Markdown rendering** — headings, bold/italic, code blocks with syntax highlighting (VS Code Dark+ theme), tables with borders, nested lists, blockquotes, links, task listsTo execute a tool, type in the chat:
-
-npm run electron:dev     # opens in an Electron window
-
-```- **Copy button** on code blocks
-
-
-
-### Build locally- **Kit toggle** — enable/disable tool kits on-the-fly without restarting```
-
-
-
-```bash- **Chat persistence** — conversations, LLM config, server URL, and selected model are saved to `localStorage`run tool "tool_name" {"param1": "value1", "param2": "value2"}
-
-npm run electron:build   # outputs to electron-dist/
-
-```- **Background title generation** — chat titles are generated by the LLM without blocking the UI```
-
-
-
-## Configuration- **Multi-platform** — builds for Linux (.AppImage), Windows (.exe), and macOS (.dmg) via GitHub Actions
-
-
-
-1. Open **Settings** (gear icon, top-right)**Example:**
-
-2. **SimpleMCP** tab — set the server URL (e.g. `http://localhost:8467`)
-
-3. **LLM** tab — enter your base URL, API key, and select a model## Getting Started```
-
-4. **Kits** tab — view loaded kits; toggle them on/off from the Kits menu in the chat bar
-
-run tool "web_search" {"query": "SimpleMCP documentation", "num_results": 5}
-
-All settings persist across sessions.
-
-### Prerequisites```
-
-## Architecture
-
-
-
-### Stack
-
-- A running **SimpleMCP V2** server (default: `http://localhost:8467`)### Tool Browser
-
-- **React 18** + **TypeScript**
-
-- **Vite** (dev server + bundler)- An OpenAI-compatible LLM endpoint + API key
-
-- **Tailwind CSS v4** + **@tailwindcss/typography**
-
-- **shadcn/ui** (Radix-based components)Click on any tool in the right sidebar to get a template with all parameters pre-filled. You can then modify the values and execute the tool.
-
-- **react-markdown** + **remark-gfm** + **react-syntax-highlighter**
-
-- **Electron** (desktop packaging)### Download
-
-
-
-### Key files### Kit Management
-
-
-
-| File | Purpose |Pre-built executables for all platforms are available under [Actions → Build Electron App → Artifacts](../../actions).
-
-| --- | --- |
-
-| `src/app/App.tsx` | Main state, chat lifecycle, agentic inference loop |- Toggle kits on/off using the switches in the left sidebar
-
-| `src/app/services/llm.ts` | OpenAI-compatible chat client (streaming + tool calls) |
-
-| `src/app/services/simplemcp.ts` | SimpleMCP V2 HTTP client || Platform | File |- Refresh kits using the refresh button
-
-| `src/app/services/persistence.ts` | localStorage read/write |
-
-| `src/app/components/ChatMessage.tsx` | Markdown rendering, collapsible tool calls ||---|---|- Only enabled kits will have their tools loaded and available
-
-| `electron/main.cjs` | Electron main process |
-
-| `.github/workflows/build.yml` | CI: builds for Linux, Windows, macOS || Linux | `SimpleMCP-Demo-Client-Linux.zip` → `.AppImage` |
-
-
-
-## Protocol Compliance| Windows | `SimpleMCP-Demo-Client-Windows.zip` → `.exe` installer |## Architecture
-
-
-
-Implements the full SimpleMCP V2 HTTP API:| macOS | `SimpleMCP-Demo-Client-macOS.zip` → `.dmg` |
-
-
-
-- `GET /list_kits`### Components
-
-- `POST /inspect_kit`
-
-- `POST /list_tools_in_kit`### Run from source
-
-- `POST /inspect_tool`
-
-- `POST /run_tool`- **TopBar** - Connection status and settings
-
-
-
-## License```bash- **KitSidebar** - Displays all available kits with enable/disable toggles
-
-
-
-MITgit clone https://github.com/dwhite-sys/SimpleMCP-Sample-Client-V2.git- **ChatInterface** - Main interaction area for executing tools
-
-
-cd SimpleMCP-Sample-Client-V2- **ToolBrowser** - Browse and explore available tools
-
-npm install- **ChatMessage** - Display messages, tool calls, and results
-
-npm run dev              # browser at http://localhost:5173
-
-# or### Services
-
-npm run electron:dev     # opens in an Electron window
-
-```- **SimpleMCPClient** - HTTP client for SimpleMCP V2 API endpoints:
-
-  - `GET /list_kits` - List all kits
-
-### Build locally  - `POST /inspect_kit` - Get kit metadata
-
-  - `POST /list_tools_in_kit` - Get tools for a kit
-
-```bash  - `POST /inspect_tool` - Get tool schema
-
-npm run electron:build   # outputs to electron-dist/  - `POST /run_tool` - Execute a tool
-
+npm run dev
 ```
 
-### Type Definitions
+Point the client at your SimpleMCP V2 server URL and any OpenAI-compatible
+endpoint in Settings. The API key field is optional if your endpoint doesn't
+require one (Ollama, for example).
 
-## Configuration
+## Building
+```bash
+npm run build          # web
+npm run electron:build # desktop (Linux, Windows, macOS)
+```
+## Related
 
-Full TypeScript types for all SimpleMCP V2 entities including kits, tools, parameters, and messages.
-
-1. Open **Settings** (gear icon, top-right)
-
-2. **SimpleMCP** tab — set the server URL (e.g. `http://localhost:8467`)## Protocol Compliance
-
-3. **LLM** tab — enter your base URL, API key, and select a model
-
-4. **Kits** tab — view loaded kits; toggle them on/off from the Kits menu in the chat barThis client fully implements the SimpleMCP V2 protocol as specified in the developer guide:
-
-
-
-All settings persist across sessions.- ✅ Kit discovery and inspection
-
-- ✅ Tool listing and inspection
-
-## Architecture- ✅ Tool execution with argument validation
-
-- ✅ Error handling and display
-
-### Stack- ✅ Connection management
-
-- ✅ Enabled/disabled kit handling
-
-- **React 18** + **TypeScript**
-
-- **Vite** (dev server + bundler)## UI Inspiration
-
-- **Tailwind CSS v4** + **@tailwindcss/typography**
-
-- **shadcn/ui** (Radix-based components)This client is inspired by OpenWebUI with a focus on:
-
-- **react-markdown** + **remark-gfm** + **react-syntax-highlighter**- Clean, modern dark theme
-
-- **Electron** (desktop packaging)- Resizable panel layout
-
-- Clear tool execution feedback
-
-### Key files- Accessible kit and tool management
-
-
-
-| File | Purpose |## Technical Stack
-
-|---|---|
-
-| `src/app/App.tsx` | Main state, chat lifecycle, agentic inference loop |- React 18 with TypeScript
-
-| `src/app/services/llm.ts` | OpenAI-compatible chat client (streaming + tool calls) |- Tailwind CSS v4
-
-| `src/app/services/simplemcp.ts` | SimpleMCP V2 HTTP client |- Radix UI components
-
-| `src/app/services/persistence.ts` | localStorage read/write |- React Resizable Panels
-
-| `src/app/components/ChatMessage.tsx` | Markdown rendering, collapsible tool calls |- Sonner for notifications
-
-| `electron/main.cjs` | Electron main process |
-| `.github/workflows/build.yml` | CI: builds for Linux, Windows, macOS |
-
-## Protocol Compliance
-
-Implements the full SimpleMCP V2 HTTP API:
-
-- `GET /list_kits`
-- `POST /inspect_kit`
-- `POST /list_tools_in_kit`
-- `POST /inspect_tool`
-- `POST /run_tool`
-
-## License
-
-MIT
+SimpleMCP V2 server coming soon.

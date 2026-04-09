@@ -1,0 +1,12 @@
+node_modules/
+dist/
+electron-dist/
+.vscode/
+*.AppImage
+*.exe
+*.dmg
+*.deb
+figma_client/
+
+# Old Figma scaffold — not part of the client
+figma_client/

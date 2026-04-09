@@ -1,4 +1,4 @@
-# SimpleMCP Sample Client V2
+# SimpleMCP V2 Reference Client
 
 This is the reference client for the SimpleMCP V2 protocol. It's meant to show
 how a client should talk to a SimpleMCP V2 server and to be a usable starting

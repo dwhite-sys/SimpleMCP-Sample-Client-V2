@@ -28,6 +28,31 @@ The client talks to two things:
 The server handles tool execution. The LLM endpoint handles reasoning and decides
 when to call tools. The client wires them together and runs the agentic loop.
 
+## How kit discovery works
+
+The SimpleMCP protocol is built around a tree model. The server is the root.
+Kits are branches. Tools are leaves. When a client connects, it walks that tree:
+call `/list_kits` to see what branches exist, then `/list_tools_in_kit` on any
+branch to see what tools are on it.
+
+This matters because of what it replaces. The standard MCP approach to having
+multiple capability sets is to run a separate server for each one and register
+them individually in your client config. Want browser automation and file access
+and notifications? That's three servers, three config entries, and a restart every
+time you add or remove one.
+
+SimpleMCP V2 collapses that into a single connection. All your kits live behind
+one server on one port. The client discovers what's available at runtime and lets
+you toggle individual kits on and off without touching a config file or restarting
+anything. Adding a new capability is `simplemcp install my_kit.py`. It shows up
+on the next refresh.
+
+The separation between kits also means toggles are meaningful. Enabling the
+browser kit doesn't pull in the database tools. Each kit is its own isolated
+branch of the tree, so the model only sees what you've turned on. That makes it
+easier to control what the model has access to in a given session and keeps the
+tool list from becoming noise.
+
 ## Getting started
 ```bash
 npm install

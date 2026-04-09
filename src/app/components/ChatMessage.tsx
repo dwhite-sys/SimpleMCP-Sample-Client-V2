@@ -194,7 +194,8 @@ function ThinkingStep({ thinking, streaming }: { thinking: string; streaming?: b
 function ToolStep({ message }: { message: Message }) {
   const [open, setOpen] = useState(false);
   if (!message.toolCall) return null;
-  const isError = !!message.toolResult?.error;
+  const isError = !!message.toolResult?.error
+    || (message.toolResult?.result != null && typeof message.toolResult.result === 'object' && 'error' in message.toolResult.result);
   const hasResult = !!message.toolResult;
   return (
     <div className="pl-4 -ml-px">
